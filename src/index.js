@@ -1,28 +1,16 @@
 // require('dotenv').config({path:"/.env"})
 import dotenv from "dotenv";
-import express from "express";
-import cors from "cors";
-import cookieParsser from "cookie-parser";
 import connect from "./db/index.js";
+import { app } from "./app.js";
 
-const app = express();
 
 dotenv.config({
     path: '.env'
 })
 
-// can pass object of origin and credentials
-app.use(cors())
-app.use(express.json({limit:"16kb"}));
-app.use(express.urlencoded({extended:true,limit:"16kb"}));
-app.use(express.static("public"));
-
-app.get("/",(req,res)=>{
-    res.send("Hello world");
-})
-
 
 const port = process.env.PORT || 5000;
+
 connect()
     .then(()=>{
         app.listen(port,()=>{
