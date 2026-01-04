@@ -158,34 +158,43 @@ const refreshToken = asyncHandler( async(req, res) =>{
     const incommingRefreshToken = req.cookie.refreshToken || req.body.refreshToken;
 
     if(!incommingRefreshToken){
-        throw new ApiError(400, "Refresh token not found");    
+        throw new ApiError(401, "Unauthorized access");    
     }
 
-    const decodedToken = await jwt.verify(incommingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+    try {
+        const decodedToken = await jwt.verify(incommingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+    
+        const user = await User.findById(decodedToken?._id);
 
-    const user = await User.findById(decodedToken?._id);
-
-    if(incommingRefreshToken !== user.refreshToken){
-        throw new ApiError(401, "Refresh token not valid")
-    }
-
-    const {accessToken, newRefreshToken} = await generateAccessAndRefreshToken(user._id);
-
-    const options = {
-        httpOnly : true,
-        secure : true
-    }
-
-    return res.status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
-    .json(
-        new ApiResponse(
-            200,
-            {accessToken, refreshToken:newRefreshToken},
-            "Access Token Refreshed"
+        if(!user){
+            throw new ApiError(401, "Invalid user");
+        }
+    
+        if(incommingRefreshToken !== user?.refreshToken){
+            throw new ApiError(401, "Refresh token is expired or used");
+        }
+    
+        const {accessToken, newRefreshToken} = await generateAccessAndRefreshToken(user._id);
+    
+        const options = {
+            httpOnly : true,
+            secure : true
+        }
+    
+        return res.status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(
+                200,
+                {accessToken, refreshToken:newRefreshToken},
+                "Access Token Refreshed"
+            )
         )
-    )
+    } catch (error) {
+        throw new ApiError(500, error?.message || "Error while generating access token");
+        
+    }
 })
 
 export { registerUser, loginUser, logOut, refreshToken };
