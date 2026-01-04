@@ -15,6 +15,7 @@ const uploadOnClodinary = async (localFilePath) => {
             resource_type : "auto"
         })
         // file upload successfully
+        console.log("file uploaded successfully")
         fs.unlinkSync(localFilePath);
         return response;
 
