@@ -15,7 +15,7 @@ const generateAccessAndRefreshToken = async (userid) =>{
     user.refreshToken = refreshToken;
     await user.save({validateBeforeSave: false});
 
-    return accessToken, refreshToken;
+    return { accessToken, refreshToken }
     }
     catch(error){
         throw new ApiError("500", "Something went wrong while generating tokens");
@@ -107,7 +107,7 @@ const loginUser = asyncHandler( async(req, res)=> {
     };
 
     const {accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
-
+    console.log(accessToken);
     const loggeInUser = await User.findById(user._id).select("-password -refreshToken");
 
     const options = {
@@ -147,8 +147,8 @@ const logOut = asyncHandler( async ( req, res ) =>{
     }
 
     return res.status(200)
-    .clearCookies("accessToken", options)
-    .clearCookies("refreshToken", options)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
     .json(
         new ApiResponse(200, {}, "User logged out Successfully")
     )

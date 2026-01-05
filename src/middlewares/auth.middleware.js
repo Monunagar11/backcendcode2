@@ -5,8 +5,8 @@ import { User } from "../models/user.models.js";
 
  export const verifyJWT = asyncHandler( async(req, res, next) => { //if res us not used we can us _ in production if somthing is not used
     try {
-        const token = req.cookies?.accessToken || req.hedear("Authorization")?.replace("Bearer ","");
-    
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","");
+    console.log(req.cookies)
         if(!token){
             throw new ApiError(401, "Unauthorized access")
         }
